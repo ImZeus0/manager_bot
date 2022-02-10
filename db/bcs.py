@@ -9,5 +9,5 @@ bcs = sqlalchemy.Table(
     sqlalchemy.Column('created_at',sqlalchemy.DateTime, nullable=False, default=datetime.datetime.now()),
     sqlalchemy.Column('updated_at',sqlalchemy.DateTime, nullable=False, default=datetime.datetime.now(), onupdate=datetime.datetime.now()),
     sqlalchemy.Column('name',sqlalchemy.String,unique=True),
-    sqlalchemy.Column('id_agency', sqlalchemy.Integer, sqlalchemy.ForeignKey('agencys.id'), nullable=False)
+    sqlalchemy.Column('id_agency', sqlalchemy.Integer, sqlalchemy.ForeignKey('agencys.id',ondelete='CASCADE'), nullable=False)
 )

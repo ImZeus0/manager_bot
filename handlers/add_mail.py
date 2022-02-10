@@ -8,6 +8,7 @@ from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
 from datetime import datetime
 from keyboard import *
+from repositories.emails import EmailRepository
 from state import *
 from core.config import *
 from aiogram.types.callback_query import CallbackQuery
@@ -22,7 +23,7 @@ async def choose_agency(call:CallbackQuery,agencys = AgencyRepository(database))
     for agency in list_agencys:
         all_agencys.append(Agency.parse_obj(agency))
 
-    await call.message.edit_reply_markup(show_agencys_for_add_email(all_agencys))
+    await call.message.edit_reply_markup(show_agencys(all_agencys,'email'))
 
 @dp.callback_query_handler(agencys_for_add_email.filter())
 async def choocebc(call:CallbackQuery,callback_data:dict,state:FSMContext,bcs = BcRepository(database)):
@@ -35,7 +36,7 @@ async def choocebc(call:CallbackQuery,callback_data:dict,state:FSMContext,bcs = 
         all_bcs.append(Bc.parse_obj(agency))
 
     await call.message.edit_text('Выберете БЦ')
-    await call.message.edit_reply_markup(show_bcs_for_add_email(all_bcs))
+    await call.message.edit_reply_markup(show_bcs(all_bcs,'email'))
 
 @dp.callback_query_handler(bc_for_add_email.filter())
 async def entername(call:CallbackQuery,state:FSMContext,callback_data:dict):
@@ -45,12 +46,35 @@ async def entername(call:CallbackQuery,state:FSMContext,callback_data:dict):
     await AddEmail.email.set()
 
 @dp.message_handler(state=AddEmail.email)
-async def add_email(m:Message,state:FSMContext,users = UserRepository(database)):
+async def add_email(m:Message,state:FSMContext,users = UserRepository(database),
+                    emails = EmailRepository(database)):
+    current_user = await users.get_by_id(m.chat.id)
     email = m.text
+    data = await state.get_data()
+    await state.finish()
     user = await users.get_by_id(m.chat.id)
-    msg = f'#{user.nickname}\nсдлеать инвайт на новую почту\n{email}'
     await bot.delete_message(m.chat.id, m.message_id - 1)
     await bot.delete_message(m.chat.id, m.message_id)
-    await bot.send_message(CHAT_ID,msg)
+    request = await emails.create(data['id_agency'],data['id_bc'],m.chat.id,email)
+    msg = f'#{user.nickname} №{request}\nсделать инвайт на новую почту\n{email}'
+    await bot.send_message(CHAT_ID,msg,reply_markup=send_request(request,m.chat.id,'mail'))
+    await m.answer(f'Заявка <b>№{request}</b> отправлена',reply_markup=main_keyboard(current_user.role))
+
+@dp.callback_query_handler(send_request_new_mail_callback.filter())
+async def updatestatusemail(call:CallbackQuery,callback_data:dict,emails = EmailRepository(database),
+                            users = UserRepository(database)):
+    id_request = callback_data.get('id')
+    status = callback_data.get('status')
+    admin = call.from_user.id
+    admin_user = await users.get_by_id(admin)
+    sender = callback_data.get('sender')
+    await emails.update_status(int(id_request),status,admin)
+    if status == 'confirm':
+        msg = f'Ваша заявка №{id_request} на новую почту <b>ОДОБРЕНА</b> #{admin_user.nickname}'
+    else:
+        msg = f'Ваша заявка №{id_request} на новую почту <b>ОТКЛОНЕНА</b> #{admin_user.nickname}'
+    await bot.send_message(int(sender),msg)
+    await call.message.edit_reply_markup(seached(status))
+
 
 

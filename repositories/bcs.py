@@ -11,9 +11,14 @@ class BcRepository(BaseRepository):
         query = bcs.select().limit(limit).offset(skip)
         return await self.database.fetch_all(query)
 
-    async def get_by_agency(self, id_agency) -> List[Bc]:
+    async def get_by_agency(self, id_agency) :
         query = bcs.select().where(bcs.c.id_agency == id_agency)
         return await self.database.fetch_all(query)
+
+    async def get_by_id(self,id):
+        query = bcs.select().where(bcs.c.id == id)
+        res = await self.database.fetch_one(query)
+        return Bc.parse_obj(res)
 
     async def create(self,name,id_agency):
         user = BcIn(
@@ -26,3 +31,8 @@ class BcRepository(BaseRepository):
         query = bcs.insert().values(**values)
         await self.database.execute(query)
         return user
+
+    async def delete(self,id):
+        query = bcs.delete().where(bcs.c.id == id)
+        await self.database.execute(query)
+        return id

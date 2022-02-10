@@ -1,6 +1,7 @@
 from db.base import database
 from loader import bot, dp
 from models.agency import Agency
+from models.bc import Bc
 from models.user import User,UserIn
 from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
@@ -45,13 +46,21 @@ async def addagency(call:CallbackQuery):
     await AddAgency.name.set()
 
 @dp.message_handler(state=AddAgency.name)
-async def confirmagency(m:Message,state:FSMContext,agencys=AgencyRepository(database)):
+async def agencycurrency(m:Message,state:FSMContext,agencys=AgencyRepository(database)):
     agency = m.text
-    await state.finish()
+    await state.update_data(agency=agency)
     await bot.delete_message(m.chat.id, m.message_id - 1)
     await bot.delete_message(m.chat.id, m.message_id)
-    await agencys.create(agency)
-    await m.answer(f'Агентство {agency} добавлено ',reply_markup=admin_panel())
+    await m.answer('Введите валюту')
+    await AddAgency.currency.set()
+
+@dp.message_handler(state=AddAgency.currency)
+async def confirmagency(m:Message,state:FSMContext,agencys=AgencyRepository(database)):
+    currency = m.text
+    data = await state.get_data()
+    await state.finish()
+    await agencys.create(data['agency'],currency)
+    await m.answer(f'Агентство {data["agency"]} добавлено ',reply_markup=admin_panel())
 
 @dp.callback_query_handler(text_contains='add_bc')
 async def chooseagencyforbc(call:CallbackQuery,agencys=AgencyRepository(database)):
@@ -81,6 +90,57 @@ async def createbc(m:Message,state:FSMContext,bcs=BcRepository(database)):
     await bot.delete_message(m.chat.id, m.message_id - 1)
     await bot.delete_message(m.chat.id, m.message_id)
     await m.answer(f'БЦ {name} добавлено ', reply_markup=admin_panel())
+
+@dp.callback_query_handler(text_contains = 'delete_agency')
+async def seleteagency(call:CallbackQuery,agencys=AgencyRepository(database)):
+    await call.message.edit_text('Выберете агентство которое нужно удалить')
+    list_agencys = await agencys.get_all()
+
+    all_agencys = []
+    for agency in list_agencys:
+        all_agencys.append(Agency.parse_obj(agency))
+
+    await call.message.edit_reply_markup(show_agencys(all_agencys,'delete'))
+
+@dp.callback_query_handler(agencys_for_delete.filter())
+async def deleteagency(call:CallbackQuery,callback_data:dict,agencys=AgencyRepository(database)):
+    id = int(callback_data.get('id'))
+    agency = await agencys.get_by_id(id)
+    await agencys.delete(id)
+    await call.message.edit_text(f'Агентство {agency.name}  удаленно',reply_markup=admin_panel())
+
+@dp.callback_query_handler(text_contains = 'delete_bc')
+async def seleteagency(call:CallbackQuery,agencys=AgencyRepository(database),bcs=BcRepository(database)):
+    await call.message.edit_text('Выберете агентство')
+    list_agencys = await agencys.get_all()
+
+    all_agencys = []
+    for agency in list_agencys:
+        all_agencys.append(Agency.parse_obj(agency))
+
+    await call.message.edit_reply_markup(show_agencys(all_agencys, 'delbc'))
+
+@dp.callback_query_handler(agencys_for_del_bc.filter())
+async def setbcfordelete(call:CallbackQuery,state:FSMContext,callback_data:dict,
+                         bcs = BcRepository(database)):
+    id_agency = int(callback_data.get('id'))
+    list_bc = await bcs.get_by_agency(id_agency)
+    all_bc = []
+    for bc in list_bc:
+        all_bc.append(Bc.parse_obj(bc))
+    await call.message.edit_text('Выберете БЦ который нужно удалить')
+    await call.message.edit_reply_markup(show_bcs(list_bc,'delete'))
+
+@dp.callback_query_handler(bc_for_delete.filter())
+async def deletebc(call:CallbackQuery,callback_data:dict,bcs = BcRepository(database)):
+    id_bc = int(callback_data.get('id'))
+    bc = await bcs.get_by_id(id_bc)
+    await bcs.delete(id_bc)
+    await call.message.edit_text(f'БЦ {bc.name} удален', reply_markup=admin_panel())
+
+
+
+
 
 
 
