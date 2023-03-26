@@ -12,6 +12,7 @@ from repositories.users import UserRepository
 
 @dp.message_handler(commands=['start'], state='*')
 async def mainstart(m: Message, state: FSMContext,users = UserRepository(database)):
+    print(m.chat.id)
     await state.finish()
     id = m.chat.id
     user = await users.get_by_id(id)
