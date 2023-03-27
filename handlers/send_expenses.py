@@ -85,7 +85,8 @@ async def enter_payment_key(m: Message,
           f'Назначение {expense_obj.purpose}\n' \
           f'Валюта {expense_obj.currency}\n ' \
           f'Cумма {expense_obj.amount}\n' \
-          f'Статус {expense_obj.status}'
+          f'Статус {expense_obj.status}'\
+          f'Nдентификатор аккаунта {expense_obj.payment_key}'
     to_admin = f'Заявка №{id_record} от {user.nickname}\n' + msq
     to_user = f'Заявка отправлена №{id_record}\n' + msq
     await m.answer(to_user, reply_markup=back())
