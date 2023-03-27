@@ -17,7 +17,7 @@ class UserRepository(BaseRepository):
         return await self.database.fetch_all(query)
 
     async def get_by_id(self, id: int) -> Optional[User]:
-        query = f"select * from users where id_user = {id}"
+        query = users.select().where(users.c.id_user==id)
         user = await self.database.fetch_one(query)
         if user is None:
             return None
