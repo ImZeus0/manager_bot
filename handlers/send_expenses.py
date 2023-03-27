@@ -39,7 +39,7 @@ async def enter_service(call: CallbackQuery, state: FSMContext, callback_data: d
 async def enter_currency(call: CallbackQuery, state: FSMContext, callback_data: dict):
     currency = callback_data.get('currency')
     await state.update_data(currency=currency)
-    await call.message.edit_text('Введите сумму', reply_markup=back())
+    await call.message.edit_text('Amount (сумма в USDT без знаков)', reply_markup=back())
     await AddExpenses.amount.set()
 
 
@@ -48,7 +48,10 @@ async def enter_amount(m: Message, state: FSMContext):
     try:
         amount = float(m.text)
         await state.update_data(amount=amount)
-        await m.answer('Введите назначение платежа', reply_markup=back())
+        await m.answer('Введите назначение  вашего платежа.\n'\
+                       'Гео и офферы куда льете,\n\n'\
+                       'Пример:\n'\
+                       '"DE - 20BET/IViBet - бренд ключи "22bet"."', reply_markup=back())
         await AddExpenses.purpose.set()
     except ValueError as e:
         await m.answer('Введите число', reply_markup=back())
@@ -60,13 +63,13 @@ async def enter_purpose(m: Message, state: FSMContext):
     await state.update_data(purpose=purpose)
     data = await state.get_data()
     if data['service'] == 'flex_card':
-        await m.answer('Введите Email\nПример: user@gmail.com', reply_markup=back())
+        await m.answer('Email ( Почта вашего агентского аккаунта):', reply_markup=back())
     elif data['service'] == '4x4':
         await m.answer('Введите адрес кошелька\nПример: TAx6owFW8Rt552z12Xaz1EqkjY95vfnwqi', reply_markup=back())
     elif data['service'] == 'combo_cards':
-        await m.answer('Введите Email\nПример: user@gmail.com', reply_markup=back())
+        await m.answer('Email ( Почта вашего агентского аккаунта) test@test.com:', reply_markup=back())
     elif data['service'].find('agency_accounts') != -1:
-        await m.answer('Введите номер аккаунта\nПример: 565-546-546', reply_markup=back())
+        await m.answer('Account Number ( Десятизначній  код рекламного кабинета):', reply_markup=back())
         await AddExpenses.account_number.set()
         return
     await AddExpenses.payment_key.set()

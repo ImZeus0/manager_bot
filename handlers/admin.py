@@ -1,10 +1,10 @@
 from db.base import database
-from google_sheet import create_list
-from keyboards.admin_keyboards import users_keyboard
+from google_sheet import create_list, write_row_spend
 from loader import bot, dp
 from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
 from keyboards.main_keyboard import *
+from keyboards.admin_keyboards import *
 from keyboards.send_requests_keyboards import *
 from repositories.expenses_repository import ExpensesRepository
 from state import *
@@ -14,7 +14,6 @@ from repositories.users import UserRepository
 
 @dp.message_handler(commands=['start'], state='*')
 async def mainstart(m: Message, state: FSMContext,users = UserRepository(database)):
-    print(m.chat.id)
     await state.finish()
     id = m.chat.id
     user = await users.get_by_id(id)
@@ -37,26 +36,18 @@ async def set_name(m:Message,state:FSMContext,users = UserRepository(database),)
     create_list(m.text)
 
 
-@dp.callback_query_handler(choose_main_menu.filter(),state='*')
-async def enter_menu(call:CallbackQuery,state:FSMContext,callback_data:dict,users = UserRepository(database),expenses=ExpensesRepository(database)):
-    menu = callback_data.get('menu')
-    if menu == 'create_order':
-        await call.message.edit_text('Выберете тип операции')
-        await call.message.edit_reply_markup(show_type_operation())
-    elif menu == 'back_mainmenu':
-        await state.finish()
-        user = await users.get_by_id(call.message.chat.id)
-        await call.message.edit_text(f'Привет {user.nickname}')
-        await call.message.edit_reply_markup(main_keyboard(user.role))
-    elif menu == 'my_orders':
-        data = await expenses.get_by_id_user(call.message.chat.id)
-        msg = 'Заявки\n'
-        for d in data:
-            msg += f'<b>ID</b>:{d.id} {d.status} {d.purpose} {d.amount} {d.service}\n'
-        await call.message.edit_text(msg,reply_markup=back())
-    elif menu == 'all_users':
-        list_users = await users.get_users()
-        await call.message.edit_text('Выберете пользователя',reply_markup=users_keyboard(list_users))
+@dp.callback_query_handler(update_table.filter())
+async def enter_menu(call:CallbackQuery,callback_data:dict,expenses=ExpensesRepository(database)):
+    nickname = callback_data.get('name')
+    id_user = int(callback_data.get('id'))
+    result = await expenses.get_by_id_user(id_user)
+    rows = []
+    rows.append(['ID','STATUS','TYPE','SERVICE','AMOUNT','CURRENCY','DATE_ACCEPT'])
+    for r in result:
+        rows.append([r.id,r.status.value,r.type_operation.value,r.service,r.amount,r.currency,str(r.updated_at)])
+    write_row_spend(nickname,rows)
+    await call.answer('Updated')
+
 
 
 

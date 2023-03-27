@@ -12,7 +12,7 @@ class UserRepository(BaseRepository):
         query = users.select().limit(limit).offset(skip)
         return await self.database.fetch_all(query)
 
-    async def get_users(self, limit: int = 100, skip: int = 0) -> List[User]:
+    async def get_users(self) -> List[User]:
         query = users.select().where(users.c.role == 'user')
         return await self.database.fetch_all(query)
 
