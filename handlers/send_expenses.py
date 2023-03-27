@@ -27,7 +27,6 @@ async def enter_type_operation(call: CallbackQuery, state: FSMContext, callback_
         await call.message.edit_reply_markup(show_currency())
 
 
-
 @dp.callback_query_handler(choose_service.filter())
 async def enter_service(call: CallbackQuery, state: FSMContext, callback_data: dict):
     service = callback_data.get('service')
@@ -59,7 +58,26 @@ async def enter_amount(m: Message, state: FSMContext):
 async def enter_purpose(m: Message, state: FSMContext):
     purpose = m.text
     await state.update_data(purpose=purpose)
-    await m.answer('Введите идентификатор аккаунта (email, address wallet, account number)', reply_markup=back())
+    data = await state.get_data()
+    if data['service'] == 'flex_card':
+        await m.answer('Введите Email\nПример: user@gmail.com', reply_markup=back())
+    elif data['service'] == '4x4':
+        await m.answer('Введите адрес кошелька\nПример: TAx6owFW8Rt552z12Xaz1EqkjY95vfnwqi', reply_markup=back())
+    elif data['service'] == 'combo_cards':
+        await m.answer('Введите Email\nПример: user@gmail.com', reply_markup=back())
+    elif data['service'].find('agency_accounts') != -1:
+        await m.answer('Введите номер аккаунта\nПример: 565-546-546', reply_markup=back())
+        await AddExpenses.account_number.set()
+        return
+    await AddExpenses.payment_key.set()
+
+
+@dp.message_handler(state=AddExpenses.account_number)
+async def enter_payment_key(m: Message,
+                            state: FSMContext):
+    account_number = m.text
+    await state.update_data(account_number=account_number)
+    await m.answer('Введите Email\nПример: user@gmail.com', reply_markup=back())
     await AddExpenses.payment_key.set()
 
 
@@ -77,6 +95,7 @@ async def enter_payment_key(m: Message,
                           currency=data['currency'],
                           purpose=data['purpose'],
                           payment_key=data['payment_key'],
+                          account_number=data.get('account_number'),
                           status=Status.PENDING)
     id_record = await expenses.create(expense_obj)
     user = await users.get_by_id(m.chat.id)
@@ -85,12 +104,16 @@ async def enter_payment_key(m: Message,
           f'Назначение {expense_obj.purpose}\n' \
           f'Валюта {expense_obj.currency}\n ' \
           f'Cумма {expense_obj.amount}\n' \
-          f'Статус {expense_obj.status}'\
-          f'Nдентификатор аккаунта {expense_obj.payment_key}'
+          f'Статус {expense_obj.status}\n' \
+          f'Nдентификатор аккаунта {expense_obj.payment_key}\n'
+    if expense_obj.account_number is not None:
+        msq += f'Account number: {expense_obj.account_number}\n'
     to_admin = f'Заявка №{id_record} от {user.nickname}\n' + msq
     to_user = f'Заявка отправлена №{id_record}\n' + msq
+    await state.finish()
     await m.answer(to_user, reply_markup=back())
-    await bot.send_message(get_settings().admin,to_admin,reply_markup=show_request(id_record,str(m.chat.id)))
+    await bot.send_message(get_settings().admin, to_admin, reply_markup=show_request(id_record, str(m.chat.id)))
+
 
 @dp.callback_query_handler(accept_request.filter())
 async def enter_request(call: CallbackQuery, state: FSMContext, callback_data: dict,
@@ -98,7 +121,6 @@ async def enter_request(call: CallbackQuery, state: FSMContext, callback_data: d
     status = callback_data.get('operation')
     id_requets = int(callback_data.get('id'))
     id_user = int(callback_data.get('user'))
-    await expenses.update_status(status,id_requets)
+    await expenses.update_status(status, id_requets)
     await call.message.edit_text(f'Запрос №{id_requets} -> {status}')
-    await bot.send_message(id_user,f'Запрос №{id_requets} -> {status}')
-
+    await bot.send_message(id_user, f'Запрос №{id_requets} -> {status}')

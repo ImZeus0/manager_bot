@@ -14,5 +14,6 @@ class Expense(BaseModel):
     amount: float
     currency: str
     purpose: str
+    account_number:Optional[str] = None
     payment_key: str
     status: Status

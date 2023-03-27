@@ -15,6 +15,7 @@ expenses = sqlalchemy.Table(
     sqlalchemy.Column('currency', sqlalchemy.String(20), nullable=False),
     sqlalchemy.Column('purpose', sqlalchemy.String(100), nullable=False),
     sqlalchemy.Column('payment_key', sqlalchemy.String(100), nullable=False),
+    sqlalchemy.Column('account_number', sqlalchemy.String(100), nullable=True),
     sqlalchemy.Column('status', sqlalchemy.Enum(Status), nullable=False),
 
 )
