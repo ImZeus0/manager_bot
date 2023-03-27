@@ -2,9 +2,9 @@ from db.base import database
 from loader import bot, dp
 from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
-from core import config
-from datetime import datetime
-from keyboard import *
+from keyboards.main_keyboard import *
+from keyboards.send_requests_keyboards import *
+from repositories.expenses_repository import ExpensesRepository
 from state import *
 from aiogram.types.callback_query import CallbackQuery
 from repositories.users import UserRepository
@@ -18,7 +18,7 @@ async def mainstart(m: Message, state: FSMContext,users = UserRepository(databas
     user = await users.get_by_id(id)
     await m.delete()
     if user is None:
-        await m.answer('Введите свой ник')
+        await m.answer('Введите свое ФИО')
         await Reg.nickname.set()
     else:
         await m.answer(f'Привет {user.nickname}',reply_markup=main_keyboard(user.role))
@@ -33,12 +33,24 @@ async def set_name(m:Message,state:FSMContext,users = UserRepository(database),)
     await m.answer(f'Привет {m.text}', reply_markup=main_keyboard(user.role))
     await state.finish()
 
-@dp.callback_query_handler(text_contains='back_mainmenu')
-async def back_menu(call:CallbackQuery,state:FSMContext,users = UserRepository(database)):
-    await state.finish()
-    user = await users.get_by_id(call.message.chat.id)
-    await call.message.edit_text(f'Привет {user.nickname}')
-    await call.message.edit_reply_markup(main_keyboard(user.role))
+
+@dp.callback_query_handler(choose_main_menu.filter(),state='*')
+async def enter_menu(call:CallbackQuery,state:FSMContext,callback_data:dict,users = UserRepository(database),expenses=ExpensesRepository(database)):
+    menu = callback_data.get('menu')
+    if menu == 'create_order':
+        await call.message.edit_text('Выберете тип операции')
+        await call.message.edit_reply_markup(show_type_operation())
+    elif menu == 'back_mainmenu':
+        await state.finish()
+        user = await users.get_by_id(call.message.chat.id)
+        await call.message.edit_text(f'Привет {user.nickname}')
+        await call.message.edit_reply_markup(main_keyboard(user.role))
+    elif menu == 'my_orders':
+        data = await expenses.get_by_id_user(call.message.chat.id)
+        msg = ''
+        for d in data:
+            msg += f'<b>ID</b>:{d.id} {d.status} {d.purpose} {d.amount} {d.service}\n'
+        await call.message.edit_text(msg,reply_markup=back())
 
 
 

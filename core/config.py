@@ -12,6 +12,7 @@ from os.path import join
 class Settings(BaseSettings):
     telegram_token: str
     database_url:str
+    admin:int
 
     class Config:
         env_file = join(os.getcwd(), 'core/config.env')
