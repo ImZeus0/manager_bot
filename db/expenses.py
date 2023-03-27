@@ -10,11 +10,11 @@ expenses = sqlalchemy.Table(
     sqlalchemy.Column('updated_at',sqlalchemy.DateTime, nullable=False, default=datetime.datetime.now(), onupdate=datetime.datetime.now()),
     sqlalchemy.Column('type_operation',sqlalchemy.Enum(Operation)),
     sqlalchemy.Column('id_user', sqlalchemy.Integer),
-    sqlalchemy.Column('service', sqlalchemy.String, nullable=False),
+    sqlalchemy.Column('service', sqlalchemy.String(50), nullable=False),
     sqlalchemy.Column('amount', sqlalchemy.Float, nullable=False),
-    sqlalchemy.Column('currency', sqlalchemy.String, nullable=False),
-    sqlalchemy.Column('purpose', sqlalchemy.String, nullable=False),
-    sqlalchemy.Column('payment_key', sqlalchemy.String, nullable=False),
+    sqlalchemy.Column('currency', sqlalchemy.String(20), nullable=False),
+    sqlalchemy.Column('purpose', sqlalchemy.String(100), nullable=False),
+    sqlalchemy.Column('payment_key', sqlalchemy.String(100), nullable=False),
     sqlalchemy.Column('status', sqlalchemy.Enum(Status), nullable=False),
 
 )
