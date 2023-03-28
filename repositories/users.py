@@ -16,6 +16,10 @@ class UserRepository(BaseRepository):
         query = users.select().where(users.c.role == 'user')
         return await self.database.fetch_all(query)
 
+    async def get_admin_users(self) -> List[User]:
+        query = users.select().where(users.c.role == 'admin')
+        return await self.database.fetch_all(query)
+
     async def get_by_id(self, id: int) -> Optional[User]:
         query = users.select().where(users.c.id_user==id)
         user = await self.database.fetch_one(query)

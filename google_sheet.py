@@ -48,5 +48,3 @@ def create_list(name):
                 }
             ]
         }).execute()
-#create_list('Тест Юзер')
-#write_row_spend('Тест Юзер',[['d','d','d',]])

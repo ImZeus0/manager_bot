@@ -14,6 +14,7 @@ from state import AddExpenses
 from depends import get_expenses_repository
 
 
+
 @dp.callback_query_handler(choose_type_operation.filter())
 async def enter_type_operation(call: CallbackQuery, state: FSMContext, callback_data: dict):
     type_operation = callback_data.get('type')
@@ -115,10 +116,12 @@ async def enter_payment_key(m: Message,
     to_user = f'Заявка отправлена №{id_record}\n' + msq
     await state.finish()
     await m.answer(to_user, reply_markup=back())
-    await bot.send_message(get_settings().admin, to_admin, reply_markup=show_request(id_record, str(m.chat.id)))
+    admin_users = await users.get_admin_users()
+    for admin in admin_users:
+        await bot.send_message(admin.id_user, to_admin, reply_markup=show_request(id_record, str(m.chat.id)))
 
 
-@dp.callback_query_handler(accept_request.filter())
+@dp.callback_query_handler(accept_request.filter(),state='*')
 async def enter_request(call: CallbackQuery, state: FSMContext, callback_data: dict,
                         expenses=ExpensesRepository(database)):
     status = callback_data.get('operation')
