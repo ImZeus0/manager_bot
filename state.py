@@ -10,3 +10,8 @@ class AddExpenses(StatesGroup):
     purpose = State()
     payment_key = State()
     account_number = State()
+
+class AddAgencyAccountState(StatesGroup):
+    email = State()
+    domain = State()
+    start_amount = State()

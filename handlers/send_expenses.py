@@ -10,7 +10,7 @@ from aiogram.types.callback_query import CallbackQuery
 from models.expenses import Expense
 from repositories.expenses_repository import ExpensesRepository
 from repositories.users import UserRepository
-from state import AddExpenses
+from state import AddExpenses, AddAgencyAccountState
 from depends import get_expenses_repository
 
 
@@ -32,9 +32,50 @@ async def enter_type_operation(call: CallbackQuery, state: FSMContext, callback_
 async def enter_service(call: CallbackQuery, state: FSMContext, callback_data: dict):
     service = callback_data.get('service')
     await state.update_data(service=service)
-    await call.message.edit_text('Выберете валюту')
-    await call.message.edit_reply_markup(show_currency())
+    if service.find('agency_accounts') != -1:
+        await call.message.edit_text(service)
+        await call.message.edit_reply_markup(show_operation_agency_accounts())
+    else:
+        await call.message.edit_text('Выберете валюту')
+        await call.message.edit_reply_markup(show_currency())
 
+
+
+
+
+@dp.callback_query_handler(choose_operation_agency_account.filter())
+async def enter_operation_account(call:CallbackQuery,callback_data:dict):
+    operation = callback_data.get('type')
+    if operation == OperationAgencyAccount.UP_BALANCE_ACCOUNT:
+        await call.message.edit_text('Выберете валюту')
+        await call.message.edit_reply_markup(show_currency())
+    elif operation == OperationAgencyAccount.CREATE_ACCOUNT:
+        await call.message.edit_text('Введите email\nПример test@test.com',reply_markup=back())
+        await AddAgencyAccountState.email.set()
+@dp.message_handler(state=AddAgencyAccountState.email)
+async def enter_email_agency_account(m:Message,state:FSMContext):
+    await state.update_data(email=m.text)
+    await m.answer('Введите домен с whitepage',reply_markup=back())
+    await AddAgencyAccountState.domain.set()
+
+@dp.message_handler(state=AddAgencyAccountState.domain)
+async def enter_domain_account(m:Message,state:FSMContext):
+    await state.update_data(domain=m.text)
+    data = await state.get_data()
+    min_amount = 0
+    if data['service'] == 'china_agency_accounts':
+        min_amount = 2000
+    elif data['service'] == 'serbia_agency_accounts':
+        min_amount = 300
+    await m.answer(f'Введите cтартовую сумма на аккаунте\nМинимум {min_amount}$',reply_markup=back())
+    await AddAgencyAccountState.start_amount.set()
+
+@dp.message_handler(state=AddAgencyAccountState.start_amount)
+async def enter_email_agency_account(m:Message,state:FSMContext):
+    await state.update_data(start_amount=m.text)
+    data = await state.get_data()
+    msg = f'Заказ аккаунта\nПочта {data["email"]}\nДомен {data["domain"]}\nТип акаута {data["service"]}\nСтартовая сумма {data["start_amount"]}'
+    await m.answer(msg,reply_markup=back())
 
 @dp.callback_query_handler(choose_currency.filter())
 async def enter_currency(call: CallbackQuery, state: FSMContext, callback_data: dict):
@@ -73,6 +114,8 @@ async def enter_purpose(m: Message, state: FSMContext):
         await m.answer('Account Number ( Десятизначній  код рекламного кабинета):', reply_markup=back())
         await AddExpenses.account_number.set()
         return
+    elif data['service'] == 'other':
+        await m.answer('Введите способ оплаты', reply_markup=back())
     await AddExpenses.payment_key.set()
 
 

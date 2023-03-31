@@ -3,6 +3,10 @@ from enum import Enum
 class Operation(str,Enum):
     UpBudget = 'up_budget'
     OtherExpenses = 'other_expenses'
+
+class OperationAgencyAccount(str,Enum):
+    CREATE_ACCOUNT = 'create_account'
+    UP_BALANCE_ACCOUNT = 'up_balance_account'
     
 class Status(str,Enum):
     PENDING = 'pending'
