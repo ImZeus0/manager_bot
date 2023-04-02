@@ -28,7 +28,7 @@ def show_service():
 def show_operation_agency_accounts():
     k = InlineKeyboardMarkup()
     k.add(InlineKeyboardButton('Пополнить кабинет',callback_data=choose_operation_agency_account.new(OperationAgencyAccount.UP_BALANCE_ACCOUNT)))
-    #k.add(InlineKeyboardButton('Заказать кабинет',callback_data=choose_operation_agency_account.new(OperationAgencyAccount.CREATE_ACCOUNT)))
+    k.add(InlineKeyboardButton('Заказать кабинет',callback_data=choose_operation_agency_account.new(OperationAgencyAccount.CREATE_ACCOUNT)))
     return k
 
 
@@ -48,6 +48,6 @@ def back():
 
 def show_request(id_requets, id_user):
     k = InlineKeyboardMarkup()
-    k.add(InlineKeyboardButton('Принять', callback_data=accept_request.new(Status.APPROVED, id_requets, id_user)))
-    k.add(InlineKeyboardButton('Отклонить', callback_data=accept_request.new(Status.REJECTED, id_requets, id_user)))
+    k.add(InlineKeyboardButton('🟢 Принять', callback_data=accept_request.new(Status.APPROVED, id_requets, id_user)))
+    k.add(InlineKeyboardButton('🔴 Отклонить', callback_data=accept_request.new(Status.REJECTED, id_requets, id_user)))
     return k

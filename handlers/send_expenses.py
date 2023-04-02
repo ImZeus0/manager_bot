@@ -44,8 +44,9 @@ async def enter_service(call: CallbackQuery, state: FSMContext, callback_data: d
 
 
 @dp.callback_query_handler(choose_operation_agency_account.filter())
-async def enter_operation_account(call:CallbackQuery,callback_data:dict):
+async def enter_operation_account(call:CallbackQuery,callback_data:dict,state:FSMContext):
     operation = callback_data.get('type')
+    await state.update_data(operation=operation)
     if operation == OperationAgencyAccount.UP_BALANCE_ACCOUNT:
         await call.message.edit_text('Выберете валюту')
         await call.message.edit_reply_markup(show_currency())
@@ -71,11 +72,34 @@ async def enter_domain_account(m:Message,state:FSMContext):
     await AddAgencyAccountState.start_amount.set()
 
 @dp.message_handler(state=AddAgencyAccountState.start_amount)
-async def enter_email_agency_account(m:Message,state:FSMContext):
-    await state.update_data(start_amount=m.text)
-    data = await state.get_data()
-    msg = f'Заказ аккаунта\nПочта {data["email"]}\nДомен {data["domain"]}\nТип акаута {data["service"]}\nСтартовая сумма {data["start_amount"]}'
-    await m.answer(msg,reply_markup=back())
+async def enter_start_amount_agency_account(m:Message,state:FSMContext,
+                                     expenses=ExpensesRepository(database),
+                                     users=UserRepository(database)):
+    try:
+        start_amount = float(m.text)
+        await state.update_data(start_amount=m.text)
+        data = await state.get_data()
+        expense_obj = Expense(type_operation=Operation.UpBudget,
+                              id_user=m.chat.id,
+                              service=data['service'],
+                              amount=start_amount,
+                              currency=Currency.USDT_TRC_20,
+                              purpose=data['domain'],
+                              payment_key=data['email'],
+                              account_number='create',
+                              status=Status.PENDING)
+        id_record = await expenses.create(expense_obj)
+        user = await users.get_by_id(m.chat.id)
+        msg = f'<b>Создание аккаунта</b>\n\nПочта {data["email"]}\nДомен {data["domain"]}\nТип акаута {data["service"]}\nСтартовая сумма {data["start_amount"]}'
+        to_admin = f'Пришла заявка на создание аккаунта №{id_record} от {user.nickname}\n'
+        to_user = f'Заявка отправлена №{id_record}\n' + msg
+        await m.answer(to_user, reply_markup=back())
+        admin_users = await users.get_admin_users()
+        for admin in admin_users:
+            await bot.send_message(admin.id_user, to_admin)
+    except:
+        await m.answer(f'Введите число', reply_markup=back())
+
 
 @dp.callback_query_handler(choose_currency.filter())
 async def enter_currency(call: CallbackQuery, state: FSMContext, callback_data: dict):
@@ -150,26 +174,27 @@ async def enter_payment_key(m: Message,
           f'Сервис: {expense_obj.service}\n' \
           f'Назначение {expense_obj.purpose}\n' \
           f'Валюта {expense_obj.currency}\n ' \
-          f'Cумма {expense_obj.amount}\n' \
+          f'Cумма <code>{expense_obj.amount}\n</code>' \
           f'Статус {expense_obj.status}\n' \
-          f'Nдентификатор аккаунта {expense_obj.payment_key}\n'
+          f'Nдентификатор аккаунта <code>{expense_obj.payment_key}\n</code>'
     if expense_obj.account_number is not None:
         msq += f'Account number: {expense_obj.account_number}\n'
-    to_admin = f'Заявка №{id_record} от {user.nickname}\n' + msq
+    to_admin = f'Пришла заявка №{id_record} от {user.nickname}\n'
     to_user = f'Заявка отправлена №{id_record}\n' + msq
     await state.finish()
     await m.answer(to_user, reply_markup=back())
     admin_users = await users.get_admin_users()
     for admin in admin_users:
-        await bot.send_message(admin.id_user, to_admin, reply_markup=show_request(id_record, str(m.chat.id)))
+        await bot.send_message(admin.id_user, to_admin)
 
 
 @dp.callback_query_handler(accept_request.filter(),state='*')
 async def enter_request(call: CallbackQuery, state: FSMContext, callback_data: dict,
-                        expenses=ExpensesRepository(database)):
+                        expenses=ExpensesRepository(database),users=UserRepository(database)):
     status = callback_data.get('operation')
     id_requets = int(callback_data.get('id'))
     id_user = int(callback_data.get('user'))
     await expenses.update_status(status, id_requets)
-    await call.message.edit_text(f'Запрос №{id_requets} -> {status}')
     await bot.send_message(id_user, f'Запрос №{id_requets} -> {status}')
+    await call.message.answer(f'Запрос №{id_requets} -> {status}',reply_markup=back())
+

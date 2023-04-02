@@ -15,6 +15,7 @@ class ExpensesRepository(BaseRepository):
         return await self.database.fetch_all(query)
 
     async def create(self,expense):
+        print(expense)
         values = {**expense.dict()}
         del values['id']
         query = expenses.insert().values(**values)
@@ -29,6 +30,13 @@ class ExpensesRepository(BaseRepository):
             res.append(Expense.parse_obj(d))
         return res
 
+    async def get_active(self) -> List[Expense]:
+        query = expenses.select().where(expenses.c.status==Status.PENDING)
+        data =  await self.database.fetch_all(query)
+        res = []
+        for d in data:
+            res.append(Expense.parse_obj(d))
+        return res
     async def update_status(self,status,id_request):
         values = {'status': status,'updated_at':datetime.now()}
         query = expenses.update().where(expenses.c.id == id_request).values(**values)
