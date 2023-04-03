@@ -62,15 +62,18 @@ async def enter_menu(call:CallbackQuery,state:FSMContext,callback_data:dict,user
     elif menu == 'active_orders':
         active_expenses = await expenses.get_active()
         for e in active_expenses:
+            user = await users.get_by_id(e.id_user)
             if e.account_number == 'create':
-                msq = f'Тип операции: <b>создать аккаунт</b>\n' \
+                msq = f'Заявка №{e.id} от {user.nickname}\n' \
+                      f'Тип операции: <b>создать аккаунт</b>\n' \
                       f'Сервис: {e.service}\n' \
                       f'White page domain {e.purpose}\n' \
                       f'Сумма {e.amount}\n ' \
                       f'Email <code>{e.payment_key}\n</code>' \
                       f'Дата {e.created_at}'
             else:
-                msq = f'Тип операции: <b>{e.type_operation}</b>\n' \
+                msq = f'Заявка №{e.id} от {user.nickname}\n' \
+                      f'Тип операции: <b>{e.type_operation}</b>\n' \
                       f'Сервис: {e.service}\n' \
                       f'Назначение {e.purpose}\n' \
                       f'Валюта {e.currency}\n ' \
