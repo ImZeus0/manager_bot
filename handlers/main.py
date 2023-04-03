@@ -78,7 +78,7 @@ async def enter_menu(call:CallbackQuery,state:FSMContext,callback_data:dict,user
                       f'Назначение {e.purpose}\n' \
                       f'Валюта {e.currency}\n ' \
                       f'Cумма <code>{e.amount}\n</code>' \
-                      f'Номер аккаунта <code>{e.account_number}</code>' \
+                      f'Номер аккаунта <code>{e.account_number}</code>\n' \
                       f'Nдентификатор аккаунта <code>{e.payment_key}\n</code>' \
                       f'Дата {e.created_at}'
             await call.message.answer(msq,reply_markup=show_request(e.id, str(e.id_user)))
