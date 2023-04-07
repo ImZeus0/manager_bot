@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from core.config import get_settings
 from db.base import database
 from keyboards.send_requests_keyboards import *
@@ -166,6 +168,7 @@ async def enter_payment_key(m: Message,
                           currency=data['currency'],
                           purpose=data['purpose'],
                           payment_key=data['payment_key'],
+                          created_at=datetime.now(),
                           account_number=data.get('account_number'),
                           status=Status.PENDING)
     id_record = await expenses.create(expense_obj)
