@@ -13,7 +13,7 @@ class UserRepository(BaseRepository):
         return await self.database.fetch_all(query)
 
     async def get_users(self) -> List[User]:
-        query = users.select().where(users.c.role == 'user')
+        query = users.select()
         return await self.database.fetch_all(query)
 
     async def get_admin_users(self) -> List[User]:
