@@ -19,9 +19,9 @@ async def enter_menu(call:CallbackQuery,callback_data:dict,users=UserRepository(
     user = await users.get_by_id(id_user)
     result = await expenses.get_by_id_user(id_user)
     rows = []
-    rows.append(['ID','STATUS','TYPE','SERVICE','AMOUNT','CURRENCY','DATE_ACCEPT'])
+    rows.append(['ID','STATUS','TYPE','SERVICE','AMOUNT','CURRENCY','DATE_ACCEPT','PURPOSE'])
     for r in result:
-        rows.append([r.id,r.status.value,r.type_operation.value,r.service,r.amount,r.currency,str(r.updated_at)])
+        rows.append([r.id,r.status.value,r.type_operation.value,r.service,r.amount,r.currency,str(r.updated_at),r.purpose])
     write_row_spend(user.nickname,rows)
     await call.answer('Updated')
 
