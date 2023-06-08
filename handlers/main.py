@@ -1,3 +1,4 @@
+from core.enums import Operation
 from db.base import database
 from google_sheet import create_list
 from keyboards.admin_keyboards import users_keyboard
@@ -63,6 +64,8 @@ async def enter_menu(call:CallbackQuery,state:FSMContext,callback_data:dict,user
         active_expenses = await expenses.get_active()
         for e in active_expenses:
             user = await users.get_by_id(e.id_user)
+            print(e.type_operation == Operation.Salary)
+            print(e.account_number)
             if e.account_number == 'create':
                 msq = f'Заявка №{e.id} от {user.nickname}\n' \
                       f'Тип операции: <b>создать аккаунт</b>\n' \
@@ -71,6 +74,13 @@ async def enter_menu(call:CallbackQuery,state:FSMContext,callback_data:dict,user
                       f'Сумма {e.amount}\n ' \
                       f'Email <code>{e.payment_key}\n</code>' \
                       f'Дата {e.created_at}'
+            elif e.type_operation == Operation.Salary.value:
+                msq = f'Заявка №{e.id} от {user.nickname}\n' \
+                      f'Тип операции: <b>Зарплата</b>\n' \
+                      f'Сумма {e.amount}\n ' \
+                      f'Реквизиты <code>{e.payment_key}\n</code>' \
+                      f'Дата {e.created_at}'
+                print('+')
             else:
                 msq = f'Заявка №{e.id} от {user.nickname}\n' \
                       f'Тип операции: <b>{e.type_operation}</b>\n' \

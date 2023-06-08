@@ -9,6 +9,7 @@ def show_type_operation():
     k = InlineKeyboardMarkup()
     k.add(InlineKeyboardButton('Ангенства и Карты', callback_data=choose_type_operation.new('up_budget')))
     k.add(InlineKeyboardButton('Прочие расходы', callback_data=choose_type_operation.new('other_expenses')))
+    k.add(InlineKeyboardButton('Зарплата',callback_data=choose_type_operation.new('salary')))
     k.add(InlineKeyboardButton('Назад', callback_data=choose_main_menu.new('back_mainmenu')))
     return k
 

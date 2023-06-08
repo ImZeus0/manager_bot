@@ -15,3 +15,7 @@ class AddAgencyAccountState(StatesGroup):
     email = State()
     domain = State()
     start_amount = State()
+
+class SalaryRequest(StatesGroup):
+    address = State()
+    amount = State()

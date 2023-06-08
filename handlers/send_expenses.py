@@ -12,7 +12,7 @@ from aiogram.types.callback_query import CallbackQuery
 from models.expenses import Expense
 from repositories.expenses_repository import ExpensesRepository
 from repositories.users import UserRepository
-from state import AddExpenses, AddAgencyAccountState
+from state import AddExpenses, AddAgencyAccountState, SalaryRequest
 from depends import get_expenses_repository
 
 
@@ -28,7 +28,41 @@ async def enter_type_operation(call: CallbackQuery, state: FSMContext, callback_
         await state.update_data(service='other')
         await call.message.edit_text('Выберете валюту')
         await call.message.edit_reply_markup(show_currency())
+    elif type_operation == Operation.Salary:
+        await state.update_data(type_operation='salary')
+        await call.message.edit_text('Введите номер карты/USDT кошелек')
+        await SalaryRequest.address.set()
 
+@dp.message_handler(state=SalaryRequest.address)
+async def enter_address_salary(m:Message,state:FSMContext):
+    await state.update_data(address=m.text)
+    await m.answer('Введите сумму в USD')
+    await SalaryRequest.amount.set()
+
+@dp.message_handler(state=SalaryRequest.amount,)
+async def enter_address_salary(m:Message,state:FSMContext,expenses=ExpensesRepository(database),
+                                     users=UserRepository(database)):
+    await state.update_data(amount=m.text)
+    data = await state.get_data()
+    data['service'] = '-'
+    expense_obj = Expense(type_operation=data['type_operation'],
+                          id_user=m.chat.id,
+                          service=data['service'],
+                          amount=data['amount'],
+                          currency='USD',
+                          purpose='Salary',
+                          payment_key=data['address'],
+                          account_number=None,
+                          status=Status.PENDING)
+    id_record = await expenses.create(expense_obj)
+    user = await users.get_by_id(m.chat.id)
+    msg = f'<b>Зарплата</b>\nСумма {data["amount"]}\nРеквизиты {data["address"]}'
+    to_admin = f'Пришла заявка на зарплату №{id_record} от {user.nickname}\n'
+    to_user = f'Заявка отправлена №{id_record}\n' + msg
+    await m.answer(to_user, reply_markup=back())
+    admin_users = await users.get_admin_users()
+    for admin in admin_users:
+        await bot.send_message(admin.id_user, to_admin)
 
 @dp.callback_query_handler(choose_service.filter())
 async def enter_service(call: CallbackQuery, state: FSMContext, callback_data: dict):
@@ -116,10 +150,11 @@ async def enter_amount(m: Message, state: FSMContext):
     try:
         amount = float(m.text)
         await state.update_data(amount=amount)
-        await m.answer('Введите назначение  вашего платежа.\n'\
-                       'Гео и офферы куда льете,\n\n'\
-                       'Пример:\n'\
-                       '"DE - 20BET/IViBet - бренд ключи "22bet"."', reply_markup=back())
+        msg = 'Примеры:\n' \
+                        'Пополнение карты onlybank для DE - 20BET/IViBet - бренд ключи "22bet".\n' \
+                        'Назначение Продление 5 укр моб прокси PPC proxylite.com\n' \
+                        'Оплата сайтов в боте телеграмм @whiteduck_bot'
+        await m.answer(msg, reply_markup=back())
         await AddExpenses.purpose.set()
     except ValueError as e:
         await m.answer('Введите число', reply_markup=back())
