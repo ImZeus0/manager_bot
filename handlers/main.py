@@ -54,7 +54,7 @@ async def enter_menu(call:CallbackQuery,state:FSMContext,callback_data:dict,user
     elif menu == 'my_orders':
         data = await expenses.get_by_id_user(call.message.chat.id)
         msg = 'Заявки\n'
-        for d in data:
+        for d in data[-20:]:
             msg += f'<b>ID</b>:{d.id} {d.status} {d.purpose} {d.amount} {d.service}\n'
         await call.message.edit_text(msg,reply_markup=back())
     elif menu == 'all_users':
