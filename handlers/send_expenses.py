@@ -101,7 +101,7 @@ async def enter_domain_account(m:Message,state:FSMContext):
     data = await state.get_data()
     min_amount = 0
     if data['service'] == 'china_agency_accounts':
-        min_amount = 2000
+        min_amount = 0
     elif data['service'] == 'serbia_agency_accounts':
         min_amount = 300
     await m.answer(f'Введите cтартовую сумма на аккаунте\nМинимум {min_amount}$',reply_markup=back())
