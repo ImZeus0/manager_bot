@@ -101,10 +101,10 @@ async def enter_domain_account(m:Message,state:FSMContext):
     data = await state.get_data()
     min_amount = 0
     if data['service'] == 'china_agency_accounts':
-        min_amount = 0
+        min_amount = 500
     elif data['service'] == 'serbia_agency_accounts':
         min_amount = 300
-    await m.answer(f'Введите cтартовую сумма на аккаунте\nМинимум {min_amount}$',reply_markup=back())
+    await m.answer(f'Введите cтартовую сумму на аккаунте\nМинимум {min_amount}$',reply_markup=back())
     await AddAgencyAccountState.start_amount.set()
 
 @dp.message_handler(state=AddAgencyAccountState.start_amount)
