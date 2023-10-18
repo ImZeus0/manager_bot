@@ -20,7 +20,7 @@ def show_service():
     k.add(InlineKeyboardButton('4x4', callback_data=choose_service.new('4x4')))
     k.add(InlineKeyboardButton('Combo Cards', callback_data=choose_service.new('combo_cards')))
     k.add(InlineKeyboardButton('China Agency Accounts', callback_data=choose_service.new('china_agency_accounts')))
-    k.add(InlineKeyboardButton('Traffic Heroes', callback_data=choose_service.new('traffic_heroes_accounts')))
+    k.add(InlineKeyboardButton('Traffic Heroes', callback_data=choose_service.new('traffic_heroes_agency_accounts')))
     k.add(InlineKeyboardButton('Serbia Agency Accounts', callback_data=choose_service.new('serbia_agency_accounts')))
     k.add(InlineKeyboardButton('Назад', callback_data=choose_main_menu.new('back_mainmenu')))
     return k
