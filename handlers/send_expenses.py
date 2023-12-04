@@ -26,13 +26,19 @@ async def enter_type_operation(call: CallbackQuery, state: FSMContext, callback_
         await call.message.edit_reply_markup(show_service())
     elif type_operation == Operation.OtherExpenses:
         await state.update_data(service='other')
-        await call.message.edit_text('Выберете валюту')
-        await call.message.edit_reply_markup(show_currency())
+        await call.message.edit_text('Источник')
+        await call.message.edit_reply_markup(show_service_other())
     elif type_operation == Operation.Salary:
         await state.update_data(type_operation='salary')
         await call.message.edit_text('Введите номер карты/USDT кошелек')
         await SalaryRequest.address.set()
 
+@dp.callback_query_handler(choose_service_other.filter())
+async def enter_currency(call: CallbackQuery, state: FSMContext, callback_data: dict):
+    service = callback_data.get('service')
+    await state.update_data(service=service)
+    await call.message.edit_text('Выберете валюту')
+    await call.message.edit_reply_markup(show_currency())
 @dp.message_handler(state=SalaryRequest.address)
 async def enter_address_salary(m:Message,state:FSMContext):
     await state.update_data(address=m.text)
@@ -175,7 +181,7 @@ async def enter_purpose(m: Message, state: FSMContext):
         await m.answer('Account Number ( Десятизначній  код рекламного кабинета):', reply_markup=back())
         await AddExpenses.account_number.set()
         return
-    elif data['service'] == 'other':
+    elif data['type_operation'] == 'other_expenses':
         await m.answer('Введите способ оплаты', reply_markup=back())
     await AddExpenses.payment_key.set()
 

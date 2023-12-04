@@ -25,6 +25,17 @@ def show_service():
     k.add(InlineKeyboardButton('Назад', callback_data=choose_main_menu.new('back_mainmenu')))
     return k
 
+def show_service_other():
+    k = InlineKeyboardMarkup()
+    k.add(InlineKeyboardButton('PPC', callback_data=choose_service_other.new('ppc')))
+    k.add(InlineKeyboardButton('Tik tok', callback_data=choose_service_other.new('tik_tok')))
+    k.add(InlineKeyboardButton('You tube', callback_data=choose_service_other.new('you_tube')))
+    k.add(InlineKeyboardButton('Первобил', callback_data=choose_service_other.new('first_bill')))
+    k.add(InlineKeyboardButton('Общие расходы кампании', callback_data=choose_service_other.new('total_сampaign_сosts')))
+    k.add(InlineKeyboardButton('Назад', callback_data=choose_main_menu.new('back_mainmenu')))
+    return k
+
+
 
 def show_operation_agency_accounts():
     k = InlineKeyboardMarkup()
