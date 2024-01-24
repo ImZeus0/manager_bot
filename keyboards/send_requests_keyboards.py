@@ -19,6 +19,7 @@ def show_service():
     k.add(InlineKeyboardButton('Flex Card', callback_data=choose_service.new('flex_card')))
     k.add(InlineKeyboardButton('4x4', callback_data=choose_service.new('4x4')))
     k.add(InlineKeyboardButton('YeezyPay', callback_data=choose_service.new('YeezyPay')))
+    k.add(InlineKeyboardButton('Aurora', callback_data=choose_service.new('Aurora')))
     k.add(InlineKeyboardButton('Combo Cards', callback_data=choose_service.new('combo_cards')))
     k.add(InlineKeyboardButton('China Agency Accounts', callback_data=choose_service.new('china_agency_accounts')))
     k.add(InlineKeyboardButton('Traffic Heroes', callback_data=choose_service.new('traffic_heroes_agency_accounts')))

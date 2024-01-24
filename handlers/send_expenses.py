@@ -175,6 +175,8 @@ async def enter_purpose(m: Message, state: FSMContext):
         await m.answer('Email ( Почта вашего агентского аккаунта):', reply_markup=back())
     if data['service'] == 'YeezyPay':
         await m.answer('Email ( Почта вашего агентского аккаунта):', reply_markup=back())
+    elif data['service'] == 'Aurora':
+        await m.answer('Email ( Почта вашего агентского аккаунта):', reply_markup=back())
     elif data['service'] == '4x4':
         await m.answer('Введите адрес кошелька\nПример: TAx6owFW8Rt552z12Xaz1EqkjY95vfnwqi', reply_markup=back())
     elif data['service'] == 'combo_cards':
