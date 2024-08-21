@@ -176,6 +176,10 @@ async def enter_purpose(m: Message, state: FSMContext):
     purpose = m.text
     await state.update_data(purpose=purpose)
     data = await state.get_data()
+    if data['service'] == 'Arbitrage':
+        await m.answer('Email ( Почта вашего агентского аккаунта):', reply_markup=back())
+    if data['service'] == 'Inhouse':
+        await m.answer('Email ( Почта вашего агентского аккаунта):', reply_markup=back())
     if data['service'] == 'flex_card':
         await m.answer('Email ( Почта вашего агентского аккаунта):', reply_markup=back())
     if data['service'] == 'YeezyPay':
