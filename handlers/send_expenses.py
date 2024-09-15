@@ -15,6 +15,11 @@ from repositories.users import UserRepository
 from state import AddExpenses, AddAgencyAccountState, SalaryRequest
 from depends import get_expenses_repository
 
+@dp.callback_query_handler(choose_source.filter())
+async def enter_source_operation(call: CallbackQuery, state: FSMContext, callback_data: dict):
+    source = callback_data.get('source')
+    await state.update_data(source=source)
+    await call.message.answer('Выберете тип операции',reply_markup=show_type_operation())
 
 
 @dp.callback_query_handler(choose_type_operation.filter())
@@ -30,7 +35,7 @@ async def enter_type_operation(call: CallbackQuery, state: FSMContext, callback_
         await call.message.edit_reply_markup(show_service_other())
     elif type_operation == Operation.Salary:
         await state.update_data(type_operation='salary')
-        await call.message.edit_text('Введите номер карты/USDT кошелек')
+        await call.message.edit_text('Введите номер USDT кошелек')
         await SalaryRequest.address.set()
 
 
@@ -56,6 +61,7 @@ async def enter_address_salary(m: Message, state: FSMContext, expenses=ExpensesR
     data = await state.get_data()
     data['service'] = '-'
     expense_obj = Expense(type_operation=data['type_operation'],
+                          source=data['source'],
                           id_user=m.chat.id,
                           service=data['service'],
                           amount=data['amount'],

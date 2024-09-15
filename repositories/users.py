@@ -41,11 +41,13 @@ class UserRepository(BaseRepository):
             return True
         return False
 
-    async def create(self,id_user,nickname):
+    async def create(self,id_user,nickname,role=None):
         user = UserIn(
             id_user = id_user,
             nickname = nickname,
         )
+        if role:
+            user.role = role
         values = {**user.dict()}
         query = users.insert().values(**values)
         await self.database.execute(query)

@@ -5,6 +5,14 @@ import json
 from core.enums import Currency, Status, OperationAgencyAccount
 
 
+def show_source():
+    k = InlineKeyboardMarkup()
+    k.add(InlineKeyboardButton('Push/Native', callback_data=choose_source.new('push_native')))
+    k.add(InlineKeyboardButton('Facebook', callback_data=choose_source.new('facebook')))
+    k.add(InlineKeyboardButton('Youtube',callback_data=choose_source.new('youtube')))
+    k.add(InlineKeyboardButton('Назад', callback_data=choose_main_menu.new('back_mainmenu')))
+    return k
+
 def show_type_operation():
     k = InlineKeyboardMarkup()
     k.add(InlineKeyboardButton('Ангенства и Карты', callback_data=choose_type_operation.new('up_budget')))
@@ -19,13 +27,13 @@ def show_service():
     k.add(InlineKeyboardButton('Flex Card', callback_data=choose_service.new('flex_card')))
     k.add(InlineKeyboardButton('4x4', callback_data=choose_service.new('4x4')))
     k.add(InlineKeyboardButton('YeezyPay', callback_data=choose_service.new('YeezyPay')))
-    k.add(InlineKeyboardButton('Aurora', callback_data=choose_service.new('Aurora')))
-    k.add(InlineKeyboardButton('Арбитражка', callback_data=choose_service.new('Arbitrage')))
-    k.add(InlineKeyboardButton('Inhouse', callback_data=choose_service.new('Inhouse')))
+    #k.add(InlineKeyboardButton('Aurora', callback_data=choose_service.new('Aurora')))
+    #k.add(InlineKeyboardButton('Арбитражка', callback_data=choose_service.new('Arbitrage')))
+    #k.add(InlineKeyboardButton('Inhouse', callback_data=choose_service.new('Inhouse')))
     k.add(InlineKeyboardButton('Combo Cards', callback_data=choose_service.new('combo_cards')))
-    k.add(InlineKeyboardButton('China Agency Accounts', callback_data=choose_service.new('china_agency_accounts')))
-    k.add(InlineKeyboardButton('Traffic Heroes', callback_data=choose_service.new('traffic_heroes_agency_accounts')))
-    k.add(InlineKeyboardButton('Serbia Agency Accounts', callback_data=choose_service.new('serbia_agency_accounts')))
+    #k.add(InlineKeyboardButton('China Agency Accounts', callback_data=choose_service.new('china_agency_accounts')))
+    #k.add(InlineKeyboardButton('Traffic Heroes', callback_data=choose_service.new('traffic_heroes_agency_accounts')))
+    #k.add(InlineKeyboardButton('Serbia Agency Accounts', callback_data=choose_service.new('serbia_agency_accounts')))
     k.add(InlineKeyboardButton('Назад', callback_data=choose_main_menu.new('back_mainmenu')))
     return k
 

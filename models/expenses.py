@@ -13,6 +13,7 @@ class Expense(BaseModel):
     service: str
     amount: float
     currency: str
+    source:str
     purpose: str
     account_number:Optional[str] = None
     payment_key: str

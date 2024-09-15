@@ -25,6 +25,35 @@ async def enter_menu(call:CallbackQuery,callback_data:dict,users=UserRepository(
     write_row_spend(user.nickname,rows)
     await call.answer('Updated')
 
+@dp.callback_query_handler(reg_new_user.filter())
+async def user_request(call:CallbackQuery,callback_data:dict,users=UserRepository(database)):
+    id_user = int(callback_data.get('id'))
+    status = callback_data.get('status')
+    user = await users.get_by_id(id_user)
+    print(user)
+    if user.role != 'wait':
+        if status == 'yes':
+            answer_text = 'одобрен'
+        else:
+            answer_text = 'отклонен'
+        text = f'🔹{user.nickname} ({user.id_user}) Запрос уже <b>{answer_text}</b>'
+        await call.message.answer(text)
+        await bot.delete_message(call.message.chat.id,call.message.message_id)
+    else:
+        if status == 'yes':
+            await users.update_role(user.id_user,'user')
+            text = '🟢 Заявка одобрена'
+        else:
+            await users.update_role(user.id_user, 'block')
+            text = '🔴 Заявка отклонена'
+        await bot.send_message(user.id_user,text)
+        await bot.delete_message(call.message.chat.id,call.message.message_id)
+
+
+
+
+
+
 
 
 

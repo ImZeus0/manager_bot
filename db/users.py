@@ -3,7 +3,7 @@ from .base import metadata
 import datetime
 
 users = sqlalchemy.Table(
-    'users_manager_bot',
+    'global_users_manager_bot',
     metadata,
     sqlalchemy.Column('id',sqlalchemy.Integer,primary_key=True,autoincrement=True,unique=True),
     sqlalchemy.Column('id_user',sqlalchemy.BigInteger,unique=True),
