@@ -133,6 +133,7 @@ async def enter_start_amount_agency_account(m: Message, state: FSMContext,
         await state.update_data(start_amount=m.text)
         data = await state.get_data()
         expense_obj = Expense(type_operation=Operation.UpBudget,
+                              source=data['source'],
                               id_user=m.chat.id,
                               service=data['service'],
                               amount=start_amount,
@@ -223,6 +224,7 @@ async def enter_payment_key(m: Message,
     data = await state.get_data()
     expense_obj = Expense(id_user=m.chat.id,
                           type_operation=data['type_operation'],
+                          source=data['source'],
                           service=data['service'],
                           amount=data['amount'],
                           currency=data['currency'],
