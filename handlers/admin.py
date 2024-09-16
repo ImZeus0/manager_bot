@@ -1,5 +1,5 @@
 from db.base import database
-from google_sheet import create_list, write_row_spend
+from google_sheet import create_list, write_row_spend, get_lists
 from loader import bot, dp
 from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
@@ -17,11 +17,16 @@ from repositories.users import UserRepository
 async def enter_menu(call:CallbackQuery,callback_data:dict,users=UserRepository(database),expenses=ExpensesRepository(database)):
     id_user = int(callback_data.get('id'))
     user = await users.get_by_id(id_user)
+    all_table = get_lists()
+    for table in all_table:
+        if table == user.nickname:
+            break
+        create_list(user.nickname)
     result = await expenses.get_by_id_user(id_user)
     rows = []
-    rows.append(['ID','STATUS','TYPE','SERVICE','AMOUNT','CURRENCY','DATE_ACCEPT','PURPOSE'])
+    rows.append(['ID','STATUS','SOURCE','TYPE','SERVICE','AMOUNT','CURRENCY','DATE_ACCEPT','PURPOSE'])
     for r in result:
-        rows.append([r.id,r.status.value,r.type_operation.value,r.service,r.amount,r.currency,str(r.updated_at),r.purpose])
+        rows.append([r.id,r.status.value,r.source,r.type_operation.value,r.service,r.amount,r.currency,str(r.updated_at),r.purpose])
     write_row_spend(user.nickname,rows)
     await call.answer('Updated')
 

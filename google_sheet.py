@@ -2,9 +2,8 @@
 import apiclient as apiclient
 import httplib2
 from oauth2client.service_account import ServiceAccountCredentials
-
 CREDENTIALS_FILE = 'manager-bot-381913-4ae1ff921100.json'  # Имя файла с закрытым ключом, вы должны подставить свое
-spreadsheetId = '10qfpdbG7sBTfAHCL0h5DSZ1vDbZ42nZsdo7g6yqOC-4'
+spreadsheetId = '1G56sXHmntQ___pNejbjMZjrVHeYiqr6Xu7AJ32ka_08'
 credentials = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE, ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'])
 httpAuth = credentials.authorize(httplib2.Http()) # Авторизуемся в системе
 service = apiclient.discovery.build('sheets', 'v4', http = httpAuth) # Выбираем работу с таблицами и 4 версию API
@@ -25,10 +24,13 @@ def write_row_spend(list,rows):
     }).execute()
 
 def get_lists():
+    res = []
     spreadsheet = service.spreadsheets().get(spreadsheetId = spreadsheetId).execute()
     sheetList = spreadsheet.get('sheets')
     for sheet in sheetList:
-        print(sheet['properties']['sheetId'], sheet['properties']['title'])
+        res.append(sheet['properties']['title'])
+    return res
+
 def create_list(name):
     results = service.spreadsheets().batchUpdate(
         spreadsheetId=spreadsheetId,
@@ -48,3 +50,5 @@ def create_list(name):
                 }
             ]
         }).execute()
+
+
