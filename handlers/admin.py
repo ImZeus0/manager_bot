@@ -13,14 +13,27 @@ from repositories.users import UserRepository
 
 
 
+@dp.callback_query_handler(all_operation.filter())
+async def all_table(call:CallbackQuery,callback_data:dict,users=UserRepository(database),expenses=ExpensesRepository(database)):
+    result = await expenses.get_all()
+    rows = []
+    rows.append(['ID','USER','STATUS','SOURCE','TYPE','SERVICE','AMOUNT','CURRENCY','DATE_ACCEPT','PURPOSE'])
+    for r in result:
+        user = await users.get_by_id(r.id_user)
+        rows.append([r.id,user.nickname,r.status.value,r.source,r.type_operation.value,r.service,r.amount,r.currency,str(r.updated_at),r.purpose])
+    write_row_spend('all',rows)
+    await call.answer('Updated')
+    print('+')
+
 @dp.callback_query_handler(update_table.filter())
 async def enter_menu(call:CallbackQuery,callback_data:dict,users=UserRepository(database),expenses=ExpensesRepository(database)):
     id_user = int(callback_data.get('id'))
     user = await users.get_by_id(id_user)
     all_table = get_lists()
-    for table in all_table:
-        if table == user.nickname:
-            break
+    print(all_table)
+    if user.nickname in all_table:
+        pass
+    else:
         create_list(user.nickname)
     result = await expenses.get_by_id_user(id_user)
     rows = []
